@@ -1,5 +1,6 @@
 const { PRODUCTS, OPENING_CASH } = require("./catalogue");
 const { buildDay, fulfillBasket } = require("./customers");
+const { reviewDay } = require("./brain");
 
 const DAY_COUNT = 60;
 const REORDER_COVER_DAYS = 2;
@@ -125,6 +126,9 @@ function runSimulation() {
   let cashCents = cents(OPENING_CASH);
   let dueOrders = [];
   const days = [];
+  const events = [];
+  const soldToDate = {};
+  const seenSlow = new Set();
   let stockOk = true;
 
   for (let dayNumber = 1; dayNumber <= DAY_COUNT; dayNumber += 1) {
@@ -152,6 +156,7 @@ function runSimulation() {
         const taken = takeFromBatches(batches, line.sku, line.qty);
         if (taken.taken !== line.qty) stockOk = false;
         sold[line.sku] = (sold[line.sku] || 0) + line.qty;
+        soldToDate[line.sku] = (soldToDate[line.sku] || 0) + line.qty;
         revenueCents += line.qty * cents(products[line.sku].unitPrice);
         cogsCents += taken.cogsCents;
       }
@@ -171,6 +176,16 @@ function runSimulation() {
     const ordered = placeOrders(batches, cashCents, dayNumber);
     cashCents = ordered.cashCents;
     dueOrders = ordered.orders;
+    events.push(
+      ...reviewDay({
+        dayNumber,
+        closing,
+        expired: expired.expired,
+        soldToDate,
+        orders: ordered.orders,
+        seenSlow,
+      })
+    );
 
     days.push({
       dayNumber,
@@ -193,7 +208,7 @@ function runSimulation() {
     });
   }
 
-  return { days, cashCents, stockOk };
+  return { days, cashCents, stockOk, events };
 }
 
 if (require.main === module) {
@@ -230,6 +245,9 @@ if (require.main === module) {
   const lowCash = placeOrders([], 100, 1);
   const lowCashOrdered = lowCash.orders.reduce((sum, order) => sum + order.qtyOrdered, 0);
   const lowCashCut = lowCash.orders.filter((order) => order.constrained).length;
+  const types = {};
+  for (const event of result.events) types[event.eventType] = (types[event.eventType] || 0) + 1;
+  console.log("events", JSON.stringify(types));
   console.log("days", result.days.length);
   console.log("customers", totals.customers);
   console.log("transactions", totals.transactions);
