@@ -166,6 +166,13 @@ async function reportPayload() {
      FROM sim_days WHERE run_id = ? ORDER BY day_number`,
     [id]
   );
+  const catalogueSample = await all(
+    `SELECT sku, name, category, unit_cost, unit_price, initial_qty, perishable, shelf_life_days
+     FROM products
+     WHERE run_id = ? AND sku IN ('P001', 'P023', 'P037', 'P038')
+     ORDER BY sku`,
+    [id]
+  );
   const examples = await all(
     `SELECT p.name, e.day_number, e.event_type, e.message, e.action, e.qty, e.amount
      FROM brain_events e
@@ -192,6 +199,7 @@ async function reportPayload() {
     events,
     slowMovers,
     activity,
+    catalogueSample,
     examples,
     assurance: await assurancePayload(run),
   };

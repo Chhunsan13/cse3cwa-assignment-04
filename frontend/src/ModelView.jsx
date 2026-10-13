@@ -71,6 +71,32 @@ export default function ModelView({ report }) {
       <p>
         Opening inventory cost {report.openingInventoryCost.toLocaleString("en-AU", { style: "currency", currency: "AUD" })} came from the {report.inventoryBudget.toLocaleString("en-AU", { style: "currency", currency: "AUD" })} inventory budget. Unused budget did not become cash. Operating cash started at {report.openingCash.toLocaleString("en-AU", { style: "currency", currency: "AUD" })} and is used only for replenishment.
       </p>
+      <h3>Product sample</h3>
+      <p>The full catalogue has 48 products. These four show the mix: long-life pantry stock, chilled milk, and short-life ready meals.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Cost</th>
+            <th>Price</th>
+            <th>Opening qty</th>
+            <th>Shelf life</th>
+          </tr>
+        </thead>
+        <tbody>
+          {report.catalogueSample.map((product) => (
+            <tr key={product.sku}>
+              <td>{product.name}</td>
+              <td>{product.category}</td>
+              <td>{product.unit_cost.toLocaleString("en-AU", { style: "currency", currency: "AUD" })}</td>
+              <td>{product.unit_price.toLocaleString("en-AU", { style: "currency", currency: "AUD" })}</td>
+              <td>{product.initial_qty}</td>
+              <td>{product.perishable ? `${product.shelf_life_days} days` : "Does not expire"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </section>
   );
 }
