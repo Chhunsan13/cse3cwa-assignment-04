@@ -107,6 +107,7 @@ function placeOrders(batches, cashCents, dayNumber) {
     const affordable = unitCents === 0 ? 0 : Math.floor(cashCents / unitCents);
     const qtyOrdered = Math.min(qtyRequested, affordable);
     const costCents = qtyOrdered * unitCents;
+    const cashBeforeCents = cashCents;
     cashCents -= costCents;
     orders.push({
       sku: product.sku,
@@ -115,7 +116,9 @@ function placeOrders(batches, cashCents, dayNumber) {
       qtyRequested,
       qtyOrdered,
       costCents,
+      cashBeforeCents,
       constrained: qtyOrdered < qtyRequested ? 1 : 0,
+      reason: onHand === 0 ? "sold_out" : "low_stock",
     });
   }
   return { orders, cashCents };
@@ -142,24 +145,62 @@ function runSimulation() {
     const stock = stockMap(batches);
     const products = Object.fromEntries(PRODUCTS.map((product) => [product.sku, product]));
     const sold = {};
+    const lost = {};
+    const revenueBySku = {};
+    const cogsBySku = {};
+    const dayTransactions = [];
+    const missionCounts = {};
     let transactions = 0;
     let revenueCents = 0;
     let cogsCents = 0;
     let lostUnits = 0;
 
     for (const basket of demand.baskets) {
+      missionCounts[basket.mission] = (missionCounts[basket.mission] || 0) + 1;
       const result = fulfillBasket(basket.lines, stock);
       lostUnits += result.lostUnits;
+      for (const line of basket.lines) {
+        const soldLine = result.sold.find((item) => item.sku === line.sku);
+        const soldQty = soldLine ? soldLine.qty : 0;
+        const missed = line.qty - soldQty;
+        if (missed > 0) lost[line.sku] = (lost[line.sku] || 0) + missed;
+      }
       if (result.sold.length === 0) continue;
       transactions += 1;
+      const savedLines = [];
+      let basketUnits = 0;
+      let basketRevenue = 0;
+      let basketCogs = 0;
       for (const line of result.sold) {
+        const product = products[line.sku];
         const taken = takeFromBatches(batches, line.sku, line.qty);
         if (taken.taken !== line.qty) stockOk = false;
+        const lineRevenue = line.qty * cents(product.unitPrice);
         sold[line.sku] = (sold[line.sku] || 0) + line.qty;
         soldToDate[line.sku] = (soldToDate[line.sku] || 0) + line.qty;
-        revenueCents += line.qty * cents(products[line.sku].unitPrice);
+        revenueBySku[line.sku] = (revenueBySku[line.sku] || 0) + lineRevenue;
+        cogsBySku[line.sku] = (cogsBySku[line.sku] || 0) + taken.cogsCents;
+        revenueCents += lineRevenue;
         cogsCents += taken.cogsCents;
+        basketUnits += line.qty;
+        basketRevenue += lineRevenue;
+        basketCogs += taken.cogsCents;
+        savedLines.push({
+          sku: line.sku,
+          qty: line.qty,
+          unitPriceCents: cents(product.unitPrice),
+          unitCostCents: cents(product.unitCost),
+          revenueCents: lineRevenue,
+          cogsCents: taken.cogsCents,
+        });
       }
+      dayTransactions.push({
+        mission: basket.mission,
+        units: basketUnits,
+        revenueCents: basketRevenue,
+        cogsCents: basketCogs,
+        lines: savedLines,
+      });
     }
 
     const closing = stockMap(batches);
@@ -205,6 +246,20 @@ function runSimulation() {
       closingInventoryCents: inventoryValueCents(batches),
       lostUnits,
       constrainedOrders: ordered.orders.filter((order) => order.constrained).length,
+      missionCounts,
+      stock: PRODUCTS.map((product) => ({
+        sku: product.sku,
+        openingQty: opening[product.sku] || 0,
+        receivedQty: received[product.sku] || 0,
+        soldQty: sold[product.sku] || 0,
+        expiredQty: expired.expired[product.sku] || 0,
+        closingQty: closing[product.sku] || 0,
+        lostQty: lost[product.sku] || 0,
+        revenueCents: revenueBySku[product.sku] || 0,
+        cogsCents: cogsBySku[product.sku] || 0,
+      })),
+      transactions: dayTransactions,
+      orders: ordered.orders,
     });
   }
 
