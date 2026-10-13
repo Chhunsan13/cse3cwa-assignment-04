@@ -1,34 +1,182 @@
 :root {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Segoe UI", sans-serif;
   color: #1c1915;
-  background: #f4f0e6;
+  background: #f3efe4;
 }
 
 body {
   margin: 0;
 }
 
-.page {
-  max-width: 40rem;
-  margin: 4rem auto;
-  padding: 0 1.5rem;
+button,
+input {
+  font: inherit;
+}
+
+.app {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 1.5rem;
 }
 
 .subject {
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-family: "Segoe UI", sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  margin: 0;
 }
 
 h1 {
+  font-family: Georgia, "Times New Roman", serif;
   font-weight: 500;
   font-size: 2.4rem;
-  margin: 0.2rem 0 1rem;
+  margin: 0.2rem 0;
 }
 
-.status,
-.hint {
-  font-family: "Segoe UI", sans-serif;
-  line-height: 1.5;
+h2,
+h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+}
+
+.lede,
+.note {
+  color: #4d463c;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.nav button,
+.day-picker button {
+  border: 1px solid #c8bba6;
+  background: #fffdf8;
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+
+.nav button.active {
+  background: #1c1915;
+  color: #f3efe4;
+  border-color: #1c1915;
+}
+
+.metrics,
+.checks,
+.split {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.metrics {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.split {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.metric,
+.check,
+.finding {
+  background: #fffdf8;
+  border: 1px solid #e4d9c8;
+  border-radius: 0.6rem;
+  padding: 0.8rem;
+}
+
+.metric p,
+.check p {
+  margin: 0;
+  color: #6b6256;
+  font-size: 0.85rem;
+}
+
+.metric strong,
+.check strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1.15rem;
+}
+
+.checks {
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.check.pass strong {
+  color: #1d6b3a;
+}
+
+.check.fail strong {
+  color: #8d2a2a;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fffdf8;
+  margin: 0.5rem 0 1.2rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.45rem 0.55rem;
+  border-bottom: 1px solid #eadfce;
+  vertical-align: top;
+}
+
+th {
+  font-size: 0.8rem;
+  color: #6b6256;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 8rem;
+  background: #fffdf8;
+  border: 1px solid #e4d9c8;
+  border-radius: 0.6rem;
+  padding: 0.5rem;
+}
+
+.bar {
+  flex: 1;
+  background: #2f6f4e;
+  min-height: 2px;
+}
+
+.bar.weekend {
+  background: #c47b2b;
+}
+
+.day-picker {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.day-picker input {
+  width: 4.5rem;
+  padding: 0.35rem;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.error {
+  color: #8d2a2a;
+}
+
+.finding p {
+  line-height: 1.45;
 }
