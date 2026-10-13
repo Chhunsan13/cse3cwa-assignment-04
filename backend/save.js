@@ -143,7 +143,7 @@ async function saveRun() {
         );
       }
 
-      for (const sale of day.transactions) {
+      for (const sale of day.sales) {
         const transactionId = await run(
           `INSERT INTO transactions (run_id, day_number, mission, units, revenue, cogs)
            VALUES (?, ?, ?, ?, ?, ?)`,

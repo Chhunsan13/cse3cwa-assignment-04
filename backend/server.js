@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { initDb, dbPath } = require("./db");
+const { registerReportRoutes } = require("./reports");
 
 const app = express();
 const PORT = 3001;
@@ -11,6 +12,8 @@ app.use(express.json());
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+registerReportRoutes(app);
 
 initDb()
   .then(() => {

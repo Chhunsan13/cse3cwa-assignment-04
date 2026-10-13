@@ -258,7 +258,7 @@ function runSimulation() {
         revenueCents: revenueBySku[product.sku] || 0,
         cogsCents: cogsBySku[product.sku] || 0,
       })),
-      transactions: dayTransactions,
+      sales: dayTransactions,
       orders: ordered.orders,
     });
   }
